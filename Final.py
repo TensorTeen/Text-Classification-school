@@ -1,30 +1,22 @@
 # importing required libraries
 from easygui import *
 from tensorflow import keras
-from cryptography.fernet import Fernet
 from mysql.connector import connect
 
-
+#initializing Dabatabase connection
 try:
     db = connect(user='root',host='localhost',passwd=passwordbox('Please enter the password for Database Server '),database='TextClassifier')
     cur = db.cursor()
-    cur.execute('CREATE TABLE IF NOT EXISTS UserInfo (\
-                name varchar(40),\
-                pass varchar(40))')
+    cur.execute('CREATE TABLE IF NOT EXISTS users (name varchar(40),pass varchar(40))')
     cur.reset()
 except:
     db = connect(user='root',host='localhost',passwd=passwordbox('Please enter the password for Database Server '))
     cur = db.cursor()
-    cur.execute('CREATE DATABASE textclassifier')
+    cur.execute('CREATE DATABASE IF NOT EXISTS textclassifier')
     cur.execute('USE textclassifier')
-    cur.execute('CREATE TABLE UserInfo\
-                name varchar(40),\
-                pass varchar(40)')
+    cur.execute('CREATE TABLE IF NOT EXISTS users (name varchar(40),pass varchar(40))')
     cur.reset()
 
-
-#secure key for password
-KEY = b'4ruL05GjqkDy_42MD02nuM_twlGYqjdqz-8PUPhisJA='
 
 #creating the dataset 
 data = keras.datasets.imdb
@@ -264,6 +256,8 @@ def login():
     Returns:
         login function (optional): if login was unsuccesful
     """
+    if buttonbox('What do you want to do ? ', choices=['Login','Register'])  == 'Register':
+        register()
     a = multpasswordbox(msg = 'Please Login with your Username and Password',title='Login',fields=('Username: ','Password: '))
     if a is None:
         if ynbox('Invalid Input Do You Want To Try Again?'):
@@ -281,13 +275,18 @@ def login():
         if ynbox('Password does not exits try again?'):
             return login()
         else:
-           exit()     
+            exit()     
 
 def register():
+    """Function to Register new user
+    """
     a = multpasswordbox(msg = 'Please signup with your new Username and Password',title='Login',fields=('Username: ','Password: '))
     user,passwd = a
     cur.reset()
-    cur.execute(f'INSERT INTO UserInfo VALUES({user},{passwd})')
+    cur.execute(f'INSERT INTO users VALUES("{user}","{passwd}")')
+    db.commit()
+    cur.reset()
+    ynbox('User Signed Up! Do you want to login ?')
     
 #running the main loop
 def main():
@@ -295,7 +294,7 @@ def main():
     """
     choice = buttonbox('Please Choose what do you want to do?', choices=['Train', 'Test','exit'])
     if choice == 'Test':
-        choice2 = buttonbox('Please choose wether you want type or would you like to upload a text file',choices=['Type','From File','Go Back'])
+        choice2 = buttonbox('Please choose wether you want type 2or would you like to upload a text file',choices=['Type','From File','Go Back'])
         if choice2 == 'Type':
             choice_type()
             return
