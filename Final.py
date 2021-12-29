@@ -72,7 +72,7 @@ def trainer(NAME,EPOCHS,BATCHSIZE,train_data,test_data):
 
     #training the model
     model.fit(x_train, y_train, epochs=EPOCHS, batch_size=BATCHSIZE, validation_batch_size=(x_val,y_val), verbose=1)
-    model.save(f"saved_model/{NAME}")
+    model.save(f"saved_model/my_model")
 
 
 def review_encode(s):
@@ -93,7 +93,7 @@ def review_encode(s):
     return encoded    
 
 
-def testing_data(filepath=None,txt=None,Modelfile='saved_model\\my_model'):
+def testing_data(filepath=None,txt=None,Modelfile='my_model.h5'):
     """Tests the data using the given inputs
 
     Args:
@@ -106,6 +106,7 @@ def testing_data(filepath=None,txt=None,Modelfile='saved_model\\my_model'):
         Tuple: returns tuple which contains score of the review
     """
     #loading the module from file
+    Modelfile = Modelfile.rstrip('saved_model.pb')
     model = keras.models.load_model(Modelfile)
 
     #if filepath is given
@@ -155,7 +156,7 @@ def choice_type():
             return
 
     except OSError:
-        modelfile = fileopenbox('Please browse and open the model')
+        modelfile = r'{}'.format(fileopenbox("Please browse and open the model"))
         predicted = testing_data(txt=txt,Modelfile=modelfile)
         scr = f'Rating: {evaluvate(predicted[0][0])} \n SCORE :{predicted[0][0]}'
         textbox(msg=scr,text=predicted[1])
