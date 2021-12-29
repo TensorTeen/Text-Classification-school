@@ -3,6 +3,10 @@ from easygui import *
 from tensorflow import keras
 from mysql.connector import connect
 
+#creating the dataset 
+data = keras.datasets.imdb
+(train_data, train_labels), (test_data, test_labels) = data.load_data(num_words=200000)
+
 #initializing Dabatabase connection
 try:
     db = connect(user='root',host='localhost',passwd=passwordbox('Please enter the password for Database Server '),database='TextClassifier')
@@ -16,11 +20,6 @@ except:
     cur.execute('USE textclassifier')
     cur.execute('CREATE TABLE IF NOT EXISTS users (name varchar(40),pass varchar(40))')
     cur.reset()
-
-
-#creating the dataset 
-data = keras.datasets.imdb
-(train_data, train_labels), (test_data, test_labels) = data.load_data(num_words=200000)
 
 #creating the word index
 word_index = data.get_word_index()
@@ -256,7 +255,7 @@ def login():
     Returns:
         login function (optional): if login was unsuccesful
     """
-    if buttonbox('What do you want to do ? ', choices=['Login','Register'])  == 'Register':
+    if not ynbox('Do you have an existing account?'):
         register()
     a = multpasswordbox(msg = 'Please Login with your Username and Password',title='Login',fields=('Username: ','Password: '))
     if a is None:
@@ -269,10 +268,10 @@ def login():
     cur.execute(f'select * from users WHERE Name = "{user}" and pass = "{passwd}"')
     d = list(cur)
     if len(d) > 0 :
-        msgbox("Welcome")
+        msgbox("Welcome! succesfully logged in! ")
         return main()
     else :
-        if ynbox('Password does not exits try again?'):
+        if ynbox('Password does not exits, do you want to try again?'):
             return login()
         else:
             exit()     
@@ -280,7 +279,7 @@ def login():
 def register():
     """Function to Register new user
     """
-    a = multpasswordbox(msg = 'Please signup with your new Username and Password',title='Login',fields=('Username: ','Password: '))
+    a = multpasswordbox(msg = 'Please signup with your new Username and Password',title='Register',fields=('Username: ','Password: '))
     user,passwd = a
     cur.reset()
     cur.execute(f'INSERT INTO users VALUES("{user}","{passwd}")')
@@ -292,9 +291,9 @@ def register():
 def main():
     """It is the main loop that runs the program
     """
-    choice = buttonbox('Please Choose what do you want to do?', choices=['Train', 'Test','exit'])
+    choice = buttonbox('Welcome to NLPC! ,Please Choose what do you want to do?', choices=['Train', 'Test','exit'],title='Main Menu')
     if choice == 'Test':
-        choice2 = buttonbox('Please choose wether you want type 2or would you like to upload a text file',choices=['Type','From File','Go Back'])
+        choice2 = buttonbox('Please choose wether you want type the review or upload a text file with movie reviews(note: each review should pasted as a line in the text file and not as paragraph)',choices=['Type','From File','Go Back'])
         if choice2 == 'Type':
             choice_type()
             return
